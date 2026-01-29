@@ -1,0 +1,319 @@
+{
+  "info": {
+    "name": "Library Manager API",
+    "description": "Complete API collection for Library Manager application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"securepass123\",\n  \"role\": \"CUSTOMER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"securepass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/token/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "token", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "List All Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/items/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop\",\n  \"category\": \"Electronics\",\n  \"description\": \"Dell XPS 13, excellent condition\",\n  \"ownership_type\": \"SELL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/items/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Item Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/items/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Updated\",\n  \"category\": \"Electronics\",\n  \"description\": \"Updated description\",\n  \"ownership_type\": \"EXCHANGE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/items/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/items/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "items", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inspection",
+      "item": [
+        {
+          "name": "List Inspection Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/inspection-reports/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inspection-reports", ""]
+            }
+          }
+        },
+        {
+          "name": "Submit Inspection Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": 1,\n  \"condition_rating\": 4,\n  \"notes\": \"Item is in excellent condition with minimal wear\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/inspection-reports/submit_report/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "inspection-reports", "submit_report", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Borrow Requests",
+      "item": [
+        {
+          "name": "List Borrow Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/borrow-requests/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "borrow-requests", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Borrow Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/borrow-requests/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "borrow-requests", ""]
+            }
+          }
+        },
+        {
+          "name": "Approve Borrow Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/borrow-requests/1/approve/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "borrow-requests", "1", "approve", ""]
+            }
+          }
+        },
+        {
+          "name": "Return Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/borrow-requests/1/return_item/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "borrow-requests", "1", "return_item", ""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
