@@ -3,6 +3,15 @@
 import os
 import sys
 
+# Patch PyMySQL before Django loads anything
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# Fix version info for Django 6.0
+import MySQLdb
+MySQLdb.VERSION = (2, 2, 1, 'final', 0)
+MySQLdb.__version__ = '2.2.1'
+MySQLdb.version_info = (2, 2, 1)
 
 def main():
     """Run administrative tasks."""

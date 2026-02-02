@@ -1,6 +1,22 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils import timezone
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, email=None, password=None, role='CUSTOMER', **extra_fields):
+        if not username:
+            raise ValueError('The Username field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', 'STAFF')
+        return self.create_user(username, email, password, **extra_fields)
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -8,6 +24,8 @@ class User(AbstractUser):
         ('STAFF', 'Staff'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='CUSTOMER')
+    
+    objects = UserManager()
 
     def __str__(self):
         return self.username
