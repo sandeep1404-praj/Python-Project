@@ -7,8 +7,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView as TokenObtainPairViewBase
 from django.utils import timezone
 from django.contrib.auth import authenticate
-from .models import User, Item, InspectionReport, BorrowRequest
-from .serializers import UserSerializer, ItemSerializer, InspectionReportSerializer, BorrowRequestSerializer
+from .models import User, Item, InspectionReport, BorrowRequest, Message, Rating, UserPoints, PointTransaction
+from .serializers import UserSerializer, ItemSerializer, InspectionReportSerializer, BorrowRequestSerializer, MessageSerializer, RatingSerializer, PointTransactionSerializer, UserPointsSerializer
 
 class IsCustomer(IsAuthenticated):
     def has_permission(self, request, view):
@@ -25,6 +25,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Call parent validate to get standard validation
         try:
             data = super().validate(attrs)
+            username = attrs.get('username')
+            password = attrs.get('password')
+            user = authenticate(username=username, password=password)
         except Exception as e:
             # If parent validation fails, try our custom authentication
             from rest_framework_simplejwt.exceptions import AuthenticationFailed
@@ -40,20 +43,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             if not user.is_active:
                 raise AuthenticationFailed('User account is inactive')
             
-            # Generate tokens
-            refresh = self.get_token(user)
+            # Generate tokens using class method
+            refresh = self.__class__.get_token(user)
             data = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
         
-        # Extract user from request or regenerate if needed
-        username = attrs.get('username')
-        password = attrs.get('password')
-        user = authenticate(username=username, password=password)
-        
+        # Add user details to response
         if user:
-            # Include user role and details in response for role-based access control on frontend
             data.update({
                 'user_id': user.id,
                 'username': user.username,
@@ -77,12 +75,24 @@ class ItemViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        if self.request.user.role == 'CUSTOMER':
+        # For list/retrieve, show all approved items to customers
+        # For create/update/delete, show only their own items
+        if self.action in ['list', 'retrieve']:
+            # Show all approved items for browsing
+            return Item.objects.filter(status='APPROVED')
+        else:
+            # For management actions, customers can only manage their own items
             return Item.objects.filter(owner=self.request.user)
-        return Item.objects.all()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def public_list(self, request):
+        """Public endpoint for non-authenticated users to browse approved items"""
+        items = Item.objects.filter(status='APPROVED')
+        serializer = self.get_serializer(items, many=True)
+        return Response(serializer.data)
 
 class InspectionReportViewSet(viewsets.ModelViewSet):
     queryset = InspectionReport.objects.all()
@@ -117,6 +127,28 @@ class InspectionReportViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['put'])
+    def update_item_status(self, request):
+        """Staff endpoint to update item status"""
+        item_id = request.data.get('item_id')
+        new_status = request.data.get('status')
+
+        try:
+            item = Item.objects.get(id=item_id)
+        except Item.DoesNotExist:
+            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate status
+        valid_statuses = [choice[0] for choice in Item.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return Response({'error': f'Invalid status. Must be one of {valid_statuses}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        item.status = new_status
+        item.save()
+
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class BorrowRequestViewSet(viewsets.ModelViewSet):
     queryset = BorrowRequest.objects.all()
     serializer_class = BorrowRequestSerializer
@@ -129,11 +161,30 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        # Show all borrow requests for customers (both sent and received)
+        # Staff can see all requests
         if self.request.user.role == 'CUSTOMER':
-            return BorrowRequest.objects.filter(borrower=self.request.user)
+            # Return requests where user is borrower OR owner of the item
+            from django.db.models import Q
+            return BorrowRequest.objects.filter(
+                Q(borrower=self.request.user) | Q(item__owner=self.request.user)
+            )
         return BorrowRequest.objects.all()
 
     def perform_create(self, serializer):
+        # Check if user already has a pending or approved request for this item
+        item = serializer.validated_data.get('item')
+        existing_request = BorrowRequest.objects.filter(
+            borrower=self.request.user,
+            item=item,
+            status__in=['PENDING', 'APPROVED']
+        ).first()
+        
+        if existing_request:
+            raise serializers.ValidationError({
+                'error': 'You already have a pending or approved request for this item'
+            })
+        
         serializer.save(borrower=self.request.user)
 
     @action(detail=True, methods=['post'])
@@ -150,6 +201,73 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
         borrow_request.item.save()
 
         serializer = self.get_serializer(borrow_request)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def deny(self, request, pk=None):
+        borrow_request = self.get_object()
+        if borrow_request.status != 'PENDING':
+            return Response({'error': 'Request already processed'}, status=status.HTTP_400_BAD_REQUEST)
+
+        borrow_request.status = 'DENIED'
+        borrow_request.save()
+
+        serializer = self.get_serializer(borrow_request)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def return_item(self, request, pk=None):
+        borrow_request = self.get_object()
+        if borrow_request.status != 'APPROVED':
+            return Response({'error': 'Item not borrowed'}, status=status.HTTP_400_BAD_REQUEST)
+
+        borrow_request.status = 'RETURNED'
+        borrow_request.return_date = timezone.now()
+        borrow_request.save()
+
+        borrow_request.item.status = 'RETURNED'
+        borrow_request.item.save()
+
+        serializer = self.get_serializer(borrow_request)
+        return Response(serializer.data)
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Users can see messages sent to them or sent by them
+        return Message.objects.filter(recipient=self.request.user) | Message.objects.filter(sender=self.request.user)
+
+    def perform_create(self, serializer):
+        """Send a message"""
+        serializer.save(sender=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def inbox(self, request):
+        """Get all messages sent to the current user"""
+        messages = Message.objects.filter(recipient=request.user).order_by('-created_at')
+        serializer = self.get_serializer(messages, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def sent(self, request):
+        """Get all messages sent by the current user"""
+        messages = Message.objects.filter(sender=request.user).order_by('-created_at')
+        serializer = self.get_serializer(messages, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        """Mark a message as read"""
+        message = self.get_object()
+        if message.recipient != request.user:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        
+        message.is_read = True
+        message.save()
+        serializer = self.get_serializer(message)
         return Response(serializer.data)
 
 class RegisterView(APIView):
@@ -192,29 +310,163 @@ class UserView(APIView):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def deny(self, request, pk=None):
-        borrow_request = self.get_object()
-        if borrow_request.status != 'PENDING':
-            return Response({'error': 'Request already processed'}, status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request):
+        """Update user profile including location"""
+        user = request.user
+        location = request.data.get('location')
+        
+        if location is not None:
+            user.location = location
+            user.save()
 
-        borrow_request.status = 'DENIED'
-        borrow_request.save()
-
-        serializer = self.get_serializer(borrow_request)
+        serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def return_item(self, request, pk=None):
-        borrow_request = self.get_object()
-        if borrow_request.status != 'APPROVED':
-            return Response({'error': 'Item not borrowed'}, status=status.HTTP_400_BAD_REQUEST)
+class RatingViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing product ratings by staff"""
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+    permission_classes = [IsStaff]
 
-        borrow_request.status = 'RETURNED'
-        borrow_request.save()
+    @action(detail=False, methods=['post'])
+    def create_rating(self, request):
+        """Create a rating for an item after inspection"""
+        item_id = request.data.get('item_id')
+        stars = request.data.get('stars')
+        comment = request.data.get('comment', '')
 
-        borrow_request.item.status = 'RETURNED'
-        borrow_request.item.save()
+        try:
+            item = Item.objects.get(id=item_id)
+        except Item.DoesNotExist:
+            return Response({'error': 'Item not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = self.get_serializer(borrow_request)
+        if not (1 <= stars <= 5):
+            return Response({'error': 'Stars must be between 1 and 5'}, status=status.HTTP_400_BAD_REQUEST)
+
+        rating, created = Rating.objects.update_or_create(
+            item=item,
+            defaults={
+                'staff': request.user,
+                'stars': stars,
+                'comment': comment
+            }
+        )
+
+        serializer = self.get_serializer(rating)
+        return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+class UserPointsViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing user points"""
+    queryset = UserPoints.objects.all()
+    serializer_class = UserPointsSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def my_points(self, request):
+        """Get current user's points"""
+        points, created = UserPoints.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(points)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def transactions(self, request):
+        """Get current user's point transactions"""
+        transactions = PointTransaction.objects.filter(user=request.user)
+        serializer = PointTransactionSerializer(transactions, many=True)
+        return Response(serializer.data)
+
+class PointTransactionViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing point transactions"""
+    queryset = PointTransaction.objects.all()
+    serializer_class = PointTransactionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Users can only see their own transactions"""
+        return PointTransaction.objects.filter(user=self.request.user)
+
+class ItemApprovalViewSet(viewsets.ViewSet):
+    """ViewSet for staff to approve/reject items"""
+    permission_classes = [IsStaff]
+
+    @action(detail=False, methods=['get'])
+    def pending_items(self, request):
+        """Get all pending items for verification"""
+        items = Item.objects.filter(status='PENDING_VERIFICATION')
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def approve_item(self, request):
+        """Approve an item and optionally add a rating"""
+        item_id = request.data.get('item_id')
+        stars = request.data.get('stars')
+        comment = request.data.get('comment', '')
+
+        try:
+            item = Item.objects.get(id=item_id, status='PENDING_VERIFICATION')
+        except Item.DoesNotExist:
+            return Response({'error': 'Item not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create rating if provided
+        if stars:
+            if not (1 <= stars <= 5):
+                return Response({'error': 'Stars must be between 1 and 5'}, status=status.HTTP_400_BAD_REQUEST)
+            Rating.objects.update_or_create(
+                item=item,
+                defaults={
+                    'staff': request.user,
+                    'stars': stars,
+                    'comment': comment
+                }
+            )
+
+        # Update item status
+        item.status = 'APPROVED'
+        item.save()
+
+        # Award points to item owner
+        points_obj, _ = UserPoints.objects.get_or_create(user=item.owner)
+        points_reward = 10  # Base points for item approval
+        points_obj.total_points += points_reward
+        points_obj.updated_at = timezone.now()
+        points_obj.save()
+
+        # Log transaction
+        PointTransaction.objects.create(
+            user=item.owner,
+            points=points_reward,
+            action='ITEM_APPROVED',
+            item=item,
+            description=f'Item "{item.name}" was approved'
+        )
+
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'])
+    def reject_item(self, request):
+        """Reject an item with a comment"""
+        item_id = request.data.get('item_id')
+        comment = request.data.get('comment', '')
+
+        try:
+            item = Item.objects.get(id=item_id, status='PENDING_VERIFICATION')
+        except Item.DoesNotExist:
+            return Response({'error': 'Item not found or not pending'}, status=status.HTTP_404_NOT_FOUND)
+
+        item.status = 'REJECTED'
+        item.save()
+
+        # Create rating with rejection comment
+        Rating.objects.update_or_create(
+            item=item,
+            defaults={
+                'staff': request.user,
+                'stars': 0,  # 0 stars for rejected items
+                'comment': f'REJECTED: {comment}'
+            }
+        )
+
+        serializer = ItemSerializer(item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
