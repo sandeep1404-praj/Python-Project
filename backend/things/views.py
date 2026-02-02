@@ -156,8 +156,9 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [IsCustomer()]
-        elif self.action in ['approve', 'deny']:
-            return [IsStaff()]
+        elif self.action in ['approve', 'deny', 'return_item']:
+            # Allow authenticated users (owner can approve/deny, borrower can return)
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -190,6 +191,11 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         borrow_request = self.get_object()
+        
+        # Check if user is the item owner
+        if borrow_request.item.owner != request.user:
+            return Response({'error': 'Only the item owner can approve this request'}, status=status.HTTP_403_FORBIDDEN)
+        
         if borrow_request.status != 'PENDING':
             return Response({'error': 'Request already processed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -206,6 +212,11 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def deny(self, request, pk=None):
         borrow_request = self.get_object()
+        
+        # Check if user is the item owner
+        if borrow_request.item.owner != request.user:
+            return Response({'error': 'Only the item owner can deny this request'}, status=status.HTTP_403_FORBIDDEN)
+        
         if borrow_request.status != 'PENDING':
             return Response({'error': 'Request already processed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -218,6 +229,11 @@ class BorrowRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def return_item(self, request, pk=None):
         borrow_request = self.get_object()
+        
+        # Check if user is the borrower
+        if borrow_request.borrower != request.user:
+            return Response({'error': 'Only the borrower can return this item'}, status=status.HTTP_403_FORBIDDEN)
+        
         if borrow_request.status != 'APPROVED':
             return Response({'error': 'Item not borrowed'}, status=status.HTTP_400_BAD_REQUEST)
 
