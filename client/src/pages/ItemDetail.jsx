@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { itemService } from '../services/itemService.js';
 import { borrowService } from '../services/borrowService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { FaBoxOpen, FaStar, FaExchangeAlt, FaHandshake, FaCoins, FaMapMarkerAlt, FaUser, FaCheckCircle, FaComments } from 'react-icons/fa';
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -55,7 +56,7 @@ export default function ItemDetail() {
     setError('');
     try {
       await borrowService.createBorrowRequest(id);
-      setSuccess('✅ Request sent successfully! Redirecting to your requests...');
+      setSuccess('Request sent successfully! Redirecting to your requests...');
       setTimeout(() => navigate('/borrow-requests'), 2000);
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.message || 'Failed to send borrow request';
@@ -109,7 +110,10 @@ export default function ItemDetail() {
   const isCustomer = user?.role === 'CUSTOMER';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50">
+      {/* Public Navigation Bar removed - using Global Layout */}
+
+      <div className="py-8">
       <div className="max-w-6xl mx-auto px-4">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -136,7 +140,7 @@ export default function ItemDetail() {
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
               <div className="h-96 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                 <div className="text-white text-center">
-                  <div className="text-9xl mb-4">📦</div>
+                  <FaBoxOpen className="text-9xl mb-4 mx-auto" />
                   <p className="text-lg font-semibold">{item.category}</p>
                 </div>
               </div>
@@ -152,17 +156,17 @@ export default function ItemDetail() {
                   }`}>
                     {item.status}
                   </span>
-                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-semibold ${
+                  <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold ${
                     item.ownership_type === 'SELL' ? 'bg-blue-100 text-blue-800' :
                     item.ownership_type === 'EXCHANGE' ? 'bg-purple-100 text-purple-800' :
                     'bg-green-100 text-green-800'
                   }`}>
-                    {item.ownership_type === 'SELL' ? '💰 For Sale' :
-                     item.ownership_type === 'EXCHANGE' ? '🔄 Exchange' :
-                     '🤝 Share'}
+                    {item.ownership_type === 'SELL' ? <><FaCoins /> For Sale</> :
+                     item.ownership_type === 'EXCHANGE' ? <><FaExchangeAlt /> Exchange</> :
+                     <><FaHandshake /> Share</>}
                   </span>
-                  <span className="inline-block px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-800">
-                    📁 {item.category}
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-800">
+                    <FaBoxOpen /> {item.category}
                   </span>
                 </div>
               </div>
@@ -177,8 +181,8 @@ export default function ItemDetail() {
                 <div className="border-b border-gray-200 pb-6 mb-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Condition</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-yellow-500 text-2xl">
-                      {'⭐'.repeat(item.condition_score)}
+                    <span className="text-yellow-500 text-2xl flex">
+                      {[...Array(item.condition_score)].map((_, i) => <FaStar key={i} />)}
                     </span>
                     <span className="text-gray-600 text-lg">{item.condition_score}/5 - Quality Rating</span>
                   </div>
@@ -316,6 +320,7 @@ export default function ItemDetail() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

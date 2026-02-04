@@ -1,11 +1,26 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import { 
+  FaGlobeAmericas, 
+  FaHandshake, 
+  FaLeaf, 
+  FaBoxOpen, 
+  FaStar, 
+  FaComments, 
+  FaTrophy, 
+  FaSearch, 
+  FaMapMarkerAlt
+} from 'react-icons/fa';
 
 export default function About() {
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Public Navigation Bar removed - using Global Layout */}
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
@@ -30,7 +45,7 @@ export default function About() {
             </p>
           </div>
           <div className="bg-blue-50 rounded-lg p-8 flex flex-col items-center justify-center">
-            <div className="text-7xl mb-6">🌍</div>
+            <FaGlobeAmericas className="text-7xl mb-6 text-blue-600" />
             <p className="text-center text-gray-700 font-semibold text-lg">Sustainable Living, One Share at a Time</p>
           </div>
         </div>
@@ -40,7 +55,7 @@ export default function About() {
           <h2 className="text-4xl font-bold text-gray-800 mb-12 text-center">Our Core Values</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-8">
-              <div className="text-5xl mb-4">🤝</div>
+              <FaHandshake className="text-5xl mb-4 text-blue-600" />
               <h3 className="text-2xl font-bold text-gray-800 mb-3">Community</h3>
               <p className="text-gray-700">
                 We believe in the power of communities to solve problems together. By connecting neighbors, we create stronger, more resilient communities.
@@ -113,42 +128,42 @@ export default function About() {
           <h2 className="text-4xl font-bold text-gray-800 mb-12 text-center">Key Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="flex gap-4">
-              <div className="text-4xl">📦</div>
+              <FaBoxOpen className="text-4xl text-blue-600" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Multiple Listing Types</h3>
                 <p className="text-gray-700">Sell, Exchange, or Share - choose what works best for you</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="text-4xl">⭐</div>
+              <FaStar className="text-4xl text-yellow-500" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Quality Ratings</h3>
                 <p className="text-gray-700">Staff-verified ratings help buyers and traders know what to expect</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="text-4xl">💬</div>
+              <FaComments className="text-4xl text-blue-500" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Direct Messaging</h3>
                 <p className="text-gray-700">Communicate directly with buyers, sellers, and traders</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="text-4xl">🏆</div>
+              <FaTrophy className="text-4xl text-yellow-600" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Reward Points</h3>
                 <p className="text-gray-700">Earn points for each transaction and redeem for benefits</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="text-4xl">🔍</div>
+              <FaSearch className="text-4xl text-gray-600" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Smart Search</h3>
                 <p className="text-gray-700">Find items by category, location, and listing type</p>
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="text-4xl">📍</div>
+              <FaMapMarkerAlt className="text-4xl text-red-500" />
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Location-Based</h3>
                 <p className="text-gray-700">Connect with people in your area for easy transactions</p>

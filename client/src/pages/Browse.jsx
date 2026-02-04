@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { itemService } from '../services/itemService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { FaBox, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
 
 export default function Browse() {
   const [items, setItems] = useState([]);
@@ -174,7 +175,7 @@ export default function Browse() {
                 <div key={item.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
                   <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-40 flex items-center justify-center">
                     <div className="text-white text-center">
-                      <div className="text-4xl mb-2">📦</div>
+                      <div className="text-4xl mb-2 text-white/80"><FaBox /></div>
                       <p className="text-sm font-semibold">{item.category}</p>
                     </div>
                   </div>
@@ -188,7 +189,7 @@ export default function Browse() {
                       <p className="font-semibold text-gray-800">{item.owner.username}</p>
                       <p className="text-xs text-gray-600">{item.owner.email}</p>
                       {item.owner.location && (
-                        <p className="text-xs text-blue-600 mt-1">📍 {item.owner.location}</p>
+                        <p className="text-xs text-blue-600 mt-1 flex items-center"><FaMapMarkerAlt className="mr-1" /> {item.owner.location}</p>
                       )}
                     </div>
 
@@ -197,8 +198,8 @@ export default function Browse() {
                         {item.ownership_type}
                       </span>
                       {item.condition_score && (
-                        <span className="text-yellow-500 text-sm">
-                          {'⭐'.repeat(item.condition_score)}
+                        <span className="text-yellow-500 text-sm flex">
+                          {[...Array(item.condition_score)].map((_, i) => <FaStar key={i} />)}
                         </span>
                       )}
                     </div>

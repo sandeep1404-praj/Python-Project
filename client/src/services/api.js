@@ -32,6 +32,12 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
+        
+        if (!refreshToken) {
+          // No refresh token, user is not logged in - don't redirect
+          return Promise.reject(error);
+        }
+        
         const response = await axios.post(`${API_BASE_URL}/token/refresh/`, {
           refresh: refreshToken,
         });
@@ -45,7 +51,12 @@ api.interceptors.response.use(
       } catch (err) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        // Only redirect if we're trying to refresh a token (user was logged in)
+        const currentPath = window.location.pathname;
+        const publicPaths = ['/', '/about', '/products', '/login', '/register'];
+        if (!publicPaths.includes(currentPath)) {
+          window.location.href = '/login';
+        }
         return Promise.reject(err);
       }
     }

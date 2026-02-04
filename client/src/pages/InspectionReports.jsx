@@ -3,6 +3,7 @@ import { inspectionService } from '../services/inspectionService.js';
 import { itemService } from '../services/itemService.js';
 import approvalService from '../services/approvalService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { FaTimesCircle, FaCheckCircle, FaFolder, FaMapMarkerAlt, FaStar, FaCheck, FaTimes } from 'react-icons/fa';
 
 export default function InspectionReports() {
   const [pendingItems, setPendingItems] = useState([]);
@@ -101,7 +102,7 @@ export default function InspectionReports() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow">
-            <p className="font-bold text-lg mb-3">❌ Access Denied - Staff Only</p>
+            <p className="font-bold text-lg mb-3 flex items-center gap-2"><FaTimesCircle className="text-xl" /> Access Denied - Staff Only</p>
             <p className="mb-3">This page is for staff members who review and approve products.</p>
             <div className="bg-red-50 border border-red-300 rounded p-3 text-sm mb-3">
               <p><strong>To access this page:</strong></p>
@@ -171,7 +172,7 @@ export default function InspectionReports() {
               </div>
             ) : pendingItems.length === 0 ? (
               <div className="bg-white rounded-lg shadow p-12 text-center">
-                <div className="text-5xl mb-4">✅</div>
+                <div className="text-5xl mb-4 text-green-500 flex justify-center"><FaCheckCircle /></div>
                 <p className="text-gray-600 text-lg">All products have been reviewed!</p>
               </div>
             ) : (
@@ -193,15 +194,15 @@ export default function InspectionReports() {
                             }`}>
                               {item.ownership_type}
                             </span>
-                            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-sm font-semibold rounded">
-                              📁 {item.category}
+                            <span className="inline-block px-3 py-1 bg-orange-100 text-orange-800 text-sm font-semibold rounded flex items-center">
+                              <FaFolder className="mr-1" /> {item.category}
                             </span>
                           </div>
                           <p className="text-gray-600 mb-2">{item.description}</p>
                           <div className="text-sm text-gray-500">
                             <p>Listed by: <strong>{item.owner.username}</strong> • {item.owner.email}</p>
                             {item.owner.location && (
-                              <p>Location: <strong>📍 {item.owner.location}</strong></p>
+                              <p className="flex items-center">Location: <strong className="flex items-center ml-1"><FaMapMarkerAlt className="mr-1" /> {item.owner.location}</strong></p>
                             )}
                           </div>
                         </div>
@@ -226,7 +227,7 @@ export default function InspectionReports() {
                                         : 'text-gray-300'
                                     }`}
                                   >
-                                    ⭐
+                                    <FaStar />
                                   </button>
                                 ))}
                               </div>
@@ -257,9 +258,9 @@ export default function InspectionReports() {
                             <button
                               onClick={() => handleApproveItem(item.id)}
                               disabled={actionLoading[item.id]}
-                              className="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50"
+                              className="flex-1 bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 flex items-center justify-center"
                             >
-                              {actionLoading[item.id] ? 'Processing...' : '✅ Approve Product'}
+                              {actionLoading[item.id] ? 'Processing...' : <><FaCheck className="mr-2" /> Approve Product</>}
                             </button>
                             <button
                               onClick={() => setExpandedItem(null)}
@@ -291,9 +292,9 @@ export default function InspectionReports() {
                             <button
                               onClick={() => handleRejectItem(item.id)}
                               disabled={actionLoading[item.id]}
-                              className="flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50"
+                              className="flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center"
                             >
-                              {actionLoading[item.id] ? 'Processing...' : '❌ Reject Product'}
+                              {actionLoading[item.id] ? 'Processing...' : <><FaTimes className="mr-2" /> Reject Product</>}
                             </button>
                             <button
                               onClick={() => setExpandedItem(null)}

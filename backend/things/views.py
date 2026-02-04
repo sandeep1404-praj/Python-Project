@@ -70,19 +70,28 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
 
     def get_permissions(self):
+        # Allow public access to list and retrieve (browsing)
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        # Require customer role for create, update, delete
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsCustomer()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        # For list/retrieve, show all approved items to customers
-        # For create/update/delete, show only their own items
+        # For list/retrieve, show all approved items (public)
+        # But also show own items for authenticated users (pending/rejected/approved)
         if self.action in ['list', 'retrieve']:
-            # Show all approved items for browsing
-            return Item.objects.filter(status='APPROVED')
-        else:
-            # For management actions, customers can only manage their own items
+            queryset = Item.objects.filter(status='APPROVED')
+            if self.request.user.is_authenticated:
+                my_items = Item.objects.filter(owner=self.request.user)
+                queryset = (queryset | my_items).distinct()
+            return queryset
+            
+        # For management actions, authenticated users can only manage their own items
+        if self.request.user.is_authenticated:
             return Item.objects.filter(owner=self.request.user)
+        return Item.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

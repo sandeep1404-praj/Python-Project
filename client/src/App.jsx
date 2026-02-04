@@ -14,7 +14,7 @@ import BorrowRequests from './pages/BorrowRequests.jsx';
 import InspectionReports from './pages/InspectionReports.jsx';
 import Messages from './pages/Messages.jsx';
 import Profile from './pages/Profile.jsx';
-import Navigation from './components/Navigation.jsx';
+import Layout from './components/Layout.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 function App() {
@@ -26,25 +26,30 @@ function App() {
 
   return (
     <Router>
-      {token && <Navigation />}
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={token ? <Home /> : <Landing />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={!token ? <Login /> : <Navigate to="/" />} />
-        <Route path="/register" element={!token ? <Register /> : <Navigate to="/" />} />
-        <Route path="/public-browse" element={<PublicBrowse />} />
+      <Layout>
+        <Routes>
+          {/* Public Routes - Accessible without login */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/products" element={<PublicBrowse />} />
+          <Route path="/item/:id" element={<ItemDetail />} />
+          <Route path="/login" element={!token ? <Login /> : <Navigate to="/" />} />
+          <Route path="/register" element={!token ? <Register /> : <Navigate to="/" />} />
+          
+          {/* Legacy route redirect */}
+          <Route path="/public-browse" element={<Navigate to="/products" replace />} />
 
-        {/* Protected Routes - Require Authentication */}
-        <Route path="/browse" element={token ? <Browse /> : <Navigate to="/login" />} />
-        <Route path="/item/:id" element={token ? <ItemDetail /> : <Navigate to="/login" />} />
-        <Route path="/create-item" element={token ? <CreateItem /> : <Navigate to="/login" />} />
-        <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/borrow-requests" element={token ? <BorrowRequests /> : <Navigate to="/login" />} />
-        <Route path="/messages" element={token ? <Messages /> : <Navigate to="/login" />} />
-        <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
-        <Route path="/inspections" element={token ? <InspectionReports /> : <Navigate to="/login" />} />
-      </Routes>
+          {/* Protected Routes - Require Authentication */}
+          <Route path="/browse" element={token ? <Browse /> : <Navigate to="/login" />} />
+          <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+          <Route path="/borrow-requests" element={token ? <BorrowRequests /> : <Navigate to="/login" />} />
+          <Route path="/messages" element={token ? <Messages /> : <Navigate to="/login" />} />
+          <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/inspections" element={token ? <InspectionReports /> : <Navigate to="/login" />} />
+          
+          {/* CreateItem removed from routes - now in Profile */}
+        </Routes>
+      </Layout>
     </Router>
   );
 }

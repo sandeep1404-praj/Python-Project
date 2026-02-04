@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { borrowService } from '../services/borrowService.js';
 import { itemService } from '../services/itemService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { FaClipboardList, FaPaperPlane, FaInbox, FaCheck, FaTimes, FaUndo } from 'react-icons/fa';
 
 export default function BorrowRequests() {
   const [requests, setRequests] = useState([]);
@@ -98,7 +99,7 @@ export default function BorrowRequests() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">📋 Borrow Requests</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8 flex items-center gap-3"><FaClipboardList /> Borrow Requests</h1>
 
         {error && <div className="error-message mb-4">{error}</div>}
         {success && <div className="success-message mb-4">{success}</div>}
@@ -107,23 +108,23 @@ export default function BorrowRequests() {
         <div className="flex gap-2 mb-6 border-b-2 border-gray-200">
           <button
             onClick={() => setActiveTab('sent')}
-            className={`px-6 py-3 font-semibold border-b-2 transition ${
+            className={`px-6 py-3 font-semibold border-b-2 transition flex items-center gap-2 ${
               activeTab === 'sent'
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-600 hover:text-gray-800'
             }`}
           >
-            📤 Sent Requests ({sentRequests.length})
+            <FaPaperPlane /> Sent Requests ({sentRequests.length})
           </button>
           <button
             onClick={() => setActiveTab('received')}
-            className={`px-6 py-3 font-semibold border-b-2 transition ${
+            className={`px-6 py-3 font-semibold border-b-2 transition flex items-center gap-2 ${
               activeTab === 'received'
                 ? 'border-green-600 text-green-600'
                 : 'border-transparent text-gray-600 hover:text-gray-800'
             }`}
           >
-            📥 Received Requests ({receivedRequests.length})
+            <FaInbox /> Received Requests ({receivedRequests.length})
           </button>
         </div>
 
@@ -133,8 +134,8 @@ export default function BorrowRequests() {
           </div>
         ) : displayRequests.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-5xl mb-4">
-              {activeTab === 'sent' ? '📤' : '📥'}
+            <div className="text-5xl mb-4 flex justify-center text-gray-400">
+              {activeTab === 'sent' ? <FaPaperPlane /> : <FaInbox />}
             </div>
             <p className="text-gray-600 text-lg">
               {activeTab === 'sent' 
@@ -153,9 +154,9 @@ export default function BorrowRequests() {
                     </h3>
                     <p className="text-gray-600">
                       {activeTab === 'sent' ? (
-                        <span>📤 You requested this item</span>
+                        <span className="flex items-center gap-2"><FaPaperPlane /> You requested this item</span>
                       ) : (
-                        <span>📥 Requested by: <strong>{request.borrower_username}</strong></span>
+                        <span className="flex items-center gap-2"><FaInbox /> Requested by: <strong>{request.borrower_username}</strong></span>
                       )}
                     </p>
                   </div>
@@ -194,16 +195,16 @@ export default function BorrowRequests() {
                       <button
                         onClick={() => handleApprove(request.id)}
                         disabled={actionLoading === request.id}
-                        className="btn btn-success btn-small"
+                        className="btn btn-success btn-small flex items-center gap-1"
                       >
-                        {actionLoading === request.id ? 'Processing...' : '✅ Approve'}
+                        {actionLoading === request.id ? 'Processing...' : <><FaCheck /> Approve</>}
                       </button>
                       <button
                         onClick={() => handleDeny(request.id)}
                         disabled={actionLoading === request.id}
-                        className="btn btn-danger btn-small"
+                        className="btn btn-danger btn-small flex items-center gap-1"
                       >
-                        {actionLoading === request.id ? 'Processing...' : '❌ Deny'}
+                        {actionLoading === request.id ? 'Processing...' : <><FaTimes /> Deny</>}
                       </button>
                     </>
                   )}
@@ -213,9 +214,9 @@ export default function BorrowRequests() {
                     <button
                       onClick={() => handleReturn(request.id)}
                       disabled={actionLoading === request.id}
-                      className="btn btn-warning btn-small"
+                      className="btn btn-warning btn-small flex items-center gap-1"
                     >
-                      {actionLoading === request.id ? 'Processing...' : '↩️ Return Item'}
+                      {actionLoading === request.id ? 'Processing...' : <><FaUndo /> Return Item</>}
                     </button>
                   )}
 

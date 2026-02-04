@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { itemService } from '../services/itemService.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { FaSearch, FaFilter, FaBoxOpen, FaMapMarkerAlt, FaGlobeAmericas, FaStar, FaExchangeAlt, FaHandshake, FaCoins, FaComment, FaEnvelope, FaSpinner } from 'react-icons/fa';
 
 export default function PublicBrowse() {
   const [items, setItems] = useState([]);
@@ -39,8 +40,11 @@ export default function PublicBrowse() {
       setFilteredItems(approved);
       setError('');
     } catch (err) {
-      setError('Failed to load products. Please try again later.');
-      console.error(err);
+      // Allow page to load even if items can't be fetched
+      console.log('Unable to load products:', err);
+      setItems([]);
+      setFilteredItems([]);
+      setError('');
     } finally {
       setLoading(false);
     }
@@ -74,7 +78,7 @@ export default function PublicBrowse() {
   const handleContactSeller = (item) => {
     if (!user) {
       // Redirect to login if not authenticated
-      navigate('/login', { state: { from: '/public-browse', itemId: item.id } });
+      navigate('/login', { state: { from: '/products', itemId: item.id } });
       return;
     }
     // If authenticated, go to messages
@@ -83,50 +87,8 @@ export default function PublicBrowse() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation for public users */}
-      <nav className="sticky top-0 z-50 bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 hover:opacity-80 transition"
-            >
-              <span className="text-3xl">📚</span>
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Library Manager
-              </span>
-            </button>
-            <div className="flex gap-4">
-              {!user ? (
-                <>
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="text-gray-700 hover:text-purple-600 font-medium transition px-6 py-2 rounded"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => navigate('/register')}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                  >
-                    Sign Up
-                  </button>
-                </>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-700 font-medium">Welcome, {user.username}!</span>
-                  <button
-                    onClick={() => navigate('/profile')}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-                  >
-                    Profile
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Top Navigation for public users - Removed */}
+
 
       {/* Page Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
@@ -181,7 +143,7 @@ export default function PublicBrowse() {
                 <option value="">All Locations</option>
                 {locations.map((loc) => (
                   <option key={loc} value={loc}>
-                    📍 {loc}
+                    {loc}
                   </option>
                 ))}
               </select>
@@ -206,13 +168,13 @@ export default function PublicBrowse() {
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <div className="text-center">
-              <div className="animate-spin text-4xl mb-4">⏳</div>
+              <div className="animate-spin text-4xl mb-4 text-blue-600 inline-block"><FaSpinner /></div>
               <p className="text-gray-600">Loading products...</p>
             </div>
           </div>
         ) : filteredItems.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <div className="text-5xl mb-4">🔍</div>
+            <div className="text-5xl mb-4 text-gray-400 flex justify-center"><FaSearch /></div>
             <p className="text-gray-600 mb-4">No items found matching your criteria</p>
             <button
               onClick={() => {
@@ -235,7 +197,7 @@ export default function PublicBrowse() {
                 {/* Item Image/Header */}
                 <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-40 flex items-center justify-center">
                   <div className="text-white text-center">
-                    <div className="text-5xl">📦</div>
+                    <div className="text-5xl text-white/80"><FaBoxOpen /></div>
                   </div>
                 </div>
 
@@ -260,8 +222,8 @@ export default function PublicBrowse() {
                   {item.condition_score && (
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-sm text-gray-600">Condition:</span>
-                      <span className="text-yellow-500">
-                        {'⭐'.repeat(item.condition_score)}
+                      <span className="text-yellow-500 flex">
+                        {[...Array(item.condition_score)].map((_, i) => <FaStar key={i} />)}
                       </span>
                     </div>
                   )}
@@ -277,8 +239,8 @@ export default function PublicBrowse() {
                       </p>
                     )}
                     {item.owner.location && (
-                      <p className="text-xs text-blue-600">
-                        <span className="font-semibold">📍 Location:</span> {item.owner.location}
+                      <p className="text-xs text-blue-600 flex items-center">
+                        <FaMapMarkerAlt className="mr-1" /> <span className="font-semibold mr-1">Location:</span> {item.owner.location}
                       </p>
                     )}
                   </div>
@@ -286,9 +248,9 @@ export default function PublicBrowse() {
                   {/* Action Button */}
                   <button
                     onClick={() => handleContactSeller(item)}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold mt-auto"
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold mt-auto flex items-center justify-center gap-2"
                   >
-                    {user ? '💬 Contact Seller' : '📧 Login to Contact'}
+                    {user ? <><FaComment /> Contact Seller</> : <><FaEnvelope /> Login to Contact</>}
                   </button>
                 </div>
               </div>
