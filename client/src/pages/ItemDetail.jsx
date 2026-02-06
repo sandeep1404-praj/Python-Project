@@ -3,7 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { itemService } from '../services/itemService.js';
 import { borrowService } from '../services/borrowService.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { FaBoxOpen, FaStar, FaExchangeAlt, FaHandshake, FaCoins, FaMapMarkerAlt, FaUser, FaCheckCircle, FaComments } from 'react-icons/fa';
+import { FaBoxOpen, FaStar, FaExchangeAlt, FaHandshake, FaCoins, FaMapMarkerAlt, FaUser, FaCheckCircle, FaComments, FaEdit, FaTrash } from 'react-icons/fa';
+
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '');
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${API_ORIGIN}${imagePath}`;
+};
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -87,21 +94,28 @@ export default function ItemDetail() {
       navigate('/login');
       return;
     }
-    navigate('/messages', { state: { itemId: item.id, recipientId: item.owner.id } });
+    navigate('/messages', { state: { recipientId: item.owner.id, itemName: item.name } });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading item...</p>
+      <div className="page-container flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#3a5333] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[#56624e] font-medium animate-pulse">Loading item details...</p>
+        </div>
       </div>
     );
   }
 
   if (!item) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-red-600 text-lg">Item not found</p>
+      <div className="page-container flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl text-[#d9e2c6] mb-4 flex justify-center"><FaBoxOpen /></div>
+          <p className="text-rose-600 text-xl font-bold">Item not found</p>
+          <button onClick={() => navigate('/browse')} className="btn btn-primary mt-6">Return to Browse</button>
+        </div>
       </div>
     );
   }
@@ -110,214 +124,199 @@ export default function ItemDetail() {
   const isCustomer = user?.role === 'CUSTOMER';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Public Navigation Bar removed - using Global Layout */}
+    <div className="page-container pb-20">
+      <div className="py-12">
+      <div className="max-w-7xl mx-auto px-6">
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
-      <div className="py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {success}
-          </div>
-        )}
-
-        <button
-          onClick={() => navigate(-1)}
-          className="text-blue-600 hover:text-blue-800 font-semibold mb-6 flex items-center gap-2"
-        >
-          ← Back
-        </button>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Product Image/Header */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-              <div className="h-96 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                <div className="text-white text-center">
-                  <FaBoxOpen className="text-9xl mb-4 mx-auto" />
-                  <p className="text-lg font-semibold">{item.category}</p>
-                </div>
-              </div>
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="group flex items-center gap-2 text-[#56624e] font-bold uppercase text-xs tracking-widest hover:text-[#3a5333] transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-[#3a5333] group-hover:text-white transition-all">
+              <FaBoxOpen size={14} className="rotate-180" />
             </div>
+            Go Back
+          </button>
+          
+          <div className="flex gap-2">
+            <span className="px-3 py-1 bg-white rounded-full text-[10px] font-black uppercase tracking-tighter text-[#8a997d] shadow-sm ring-1 ring-[#d9e2c6]">
+              Ref: #{item.id}
+            </span>
+          </div>
+        </div>
 
-            {/* Product Details */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div className="mb-6">
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">{item.name}</h1>
-                <div className="flex gap-2 flex-wrap mb-4">
-                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-semibold ${
-                    item.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {item.status}
-                  </span>
-                  <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold ${
-                    item.ownership_type === 'SELL' ? 'bg-blue-100 text-blue-800' :
-                    item.ownership_type === 'EXCHANGE' ? 'bg-purple-100 text-purple-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {item.ownership_type === 'SELL' ? <><FaCoins /> For Sale</> :
-                     item.ownership_type === 'EXCHANGE' ? <><FaExchangeAlt /> Exchange</> :
-                     <><FaHandshake /> Share</>}
-                  </span>
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-800">
-                    <FaBoxOpen /> {item.category}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border-b border-gray-200 pb-6 mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-3">Description</h2>
-                <p className="text-gray-600 leading-relaxed text-lg">{item.description}</p>
-              </div>
-
-              {/* Condition Rating */}
-              {item.condition_score && (
-                <div className="border-b border-gray-200 pb-6 mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Condition</h3>
-                  <div className="flex items-center gap-3">
-                    <span className="text-yellow-500 text-2xl flex">
-                      {[...Array(item.condition_score)].map((_, i) => <FaStar key={i} />)}
-                    </span>
-                    <span className="text-gray-600 text-lg">{item.condition_score}/5 - Quality Rating</span>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Visual Gallery Section */}
+          <div className="lg:col-span-7">
+            <div className="card aspect-[4/3] relative overflow-hidden bg-white group">
+              {item.image ? (
+                <img
+                  src={getImageUrl(item.image)}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#fbf7ee] to-[#f3e6c5] flex flex-col items-center justify-center">
+                  <FaBoxOpen className="text-9xl text-[#d9e2c6]" />
+                  <p className="mt-4 font-display font-medium text-[#56624e]">{item.category}</p>
                 </div>
               )}
-
-              {/* Date */}
-              <div className="text-gray-500 text-sm">
-                Listed on {new Date(item.created_at).toLocaleDateString()}
+              
+              <div className="absolute top-6 left-6 flex flex-col gap-2">
+                <span className={`status-badge ${
+                  item.status === 'APPROVED' ? 'status-badge-approved' : 'status-badge-pending'
+                } shadow-lg backdrop-blur-md`}>
+                  {item.status}
+                </span>
               </div>
+            </div>
+
+            {/* Detailed Metadata Grid */}
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+               <div className="card p-4 bg-white/50 text-center">
+                  <span className="block text-[10px] uppercase font-bold text-[#8a997d] tracking-widest mb-1">Type</span>
+                  <p className="font-bold text-[#2f3b2b] text-sm uppercase">{item.ownership_type}</p>
+               </div>
+               <div className="card p-4 bg-white/50 text-center">
+                  <span className="block text-[10px] uppercase font-bold text-[#8a997d] tracking-widest mb-1">Category</span>
+                  <p className="font-bold text-[#2f3b2b] text-sm uppercase">{item.category}</p>
+               </div>
+               <div className="card p-4 bg-white/50 text-center">
+                  <span className="block text-[10px] uppercase font-bold text-[#8a997d] tracking-widest mb-1">Impact</span>
+                  <p className="font-bold text-[#2f3b2b] text-sm uppercase">+12 Shares</p>
+               </div>
+               <div className="card p-4 bg-white/50 text-center">
+                  <span className="block text-[10px] uppercase font-bold text-[#8a997d] tracking-widest mb-1">Condition</span>
+                  <div className="flex justify-center text-amber-500 text-xs gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar key={i} className={i < (item.condition_score || 4) ? 'fill-current' : 'text-[#d9e2c6]'} />
+                    ))}
+                  </div>
+               </div>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            {/* Seller Info Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Seller Information</h3>
-              
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xl font-bold">
+          {/* Transaction & Info Sidebar */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="card p-8 md:p-10 shadow-xl shadow-[#3a5333]/5 border-t-8 border-t-[#3a5333]">
+              <div className="mb-10">
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-[#2f3b2b] mb-4 leading-tight">{item.name}</h1>
+                <p className="text-[#56624e] text-lg leading-relaxed">{item.description}</p>
+              </div>
+
+              {/* Action Zone */}
+              <div className="space-y-4 pt-8 border-t border-[#fbf7ee]">
+                {!isOwner && user && item.status === 'APPROVED' && !existingRequest && (
+                  <button
+                    onClick={handleBorrowRequest}
+                    className="w-full btn btn-primary py-5 text-lg shadow-xl shadow-[#3a5333]/20 flex items-center justify-center gap-3 transition-transform active:scale-95"
+                    disabled={actionLoading}
+                  >
+                    {actionLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <FaHandshake />
+                        <span>Request this Item</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {!isOwner && isCustomer && existingRequest && (
+                  <div className="card bg-[#f8fcf5] border-[#3a5333]/20 p-6 text-center shadow-inner">
+                    <p className={`text-lg font-bold mb-1 ${
+                      existingRequest.status === 'APPROVED' ? 'text-emerald-600' : 'text-amber-600'
+                    }`}>
+                      {existingRequest.status === 'PENDING' ? '⏳ Request Pending' : '✅ Request Approved'}
+                    </p>
+                    <p className="text-xs text-[#56624e] mb-4">
+                      {existingRequest.status === 'PENDING' 
+                        ? 'The owner has been notified of your interest.' 
+                        : 'Coordinate your pickup in the borrow requests section.'}
+                    </p>
+                    <button
+                      onClick={() => navigate('/borrow-requests')}
+                      className="text-sm font-black uppercase text-[#3a5333] hover:underline decoration-2"
+                    >
+                      View Your Requests →
+                    </button>
+                  </div>
+                )}
+
+                {!isOwner && !user && (
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="w-full btn btn-primary py-5 text-lg flex items-center justify-center gap-3"
+                  >
+                    <FaUser /> Login to Participate
+                  </button>
+                )}
+
+                {isOwner && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <button className="btn btn-secondary py-4 flex items-center justify-center gap-2">
+                      <FaEdit /> Edit
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={actionLoading}
+                      className="btn btn-danger py-4 flex items-center justify-center gap-2 bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-600 hover:text-white"
+                    >
+                      {actionLoading ? '...' : <><FaTrash /> Delete</>}
+                    </button>
+                  </div>
+                )}
+                
+                {!isOwner && user && (
+                  <button
+                    onClick={handleContactSeller}
+                    className="w-full btn bg-white border-2 border-[#d9e2c6] text-[#2f3b2b] hover:bg-[#fbf7ee] py-4 flex items-center justify-center gap-3"
+                  >
+                    <FaComments className="text-[#3a5333]" /> Message Owner
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Owner Profile Context */}
+            <div className="card p-8 bg-gradient-to-br from-white to-[#fbf7ee]/30 overflow-hidden relative group">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <FaMapMarkerAlt size={80} />
+              </div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#8a997d] mb-6">Shared By</h3>
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-2xl bg-[#3a5333] text-[#f8f1da] flex items-center justify-center text-2xl font-display font-bold shadow-lg shadow-[#3a5333]/10">
                   {item.owner.username.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">{item.owner.username}</p>
-                  <p className="text-sm text-gray-600">Community Member</p>
+                  <p className="text-xl font-bold text-[#2f3b2b]">{item.owner.username}</p>
+                  <p className="text-sm text-[#56624e] flex items-center gap-1">
+                    <FaMapMarkerAlt size={12} className="text-[#3a5333]" />
+                    {item.owner.location || 'Local Community'}
+                  </p>
                 </div>
               </div>
-
-              <div className="space-y-3 mb-4 pb-4 border-b border-gray-200">
-                <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="text-gray-800 font-medium">{item.owner.email}</p>
-                </div>
-                {item.owner.location && (
-                  <div>
-                    <p className="text-sm text-gray-600">Location</p>
-                    <p className="text-gray-800 font-medium">📍 {item.owner.location}</p>
-                  </div>
-                )}
+              
+              <div className="mt-8 pt-6 border-t border-[#f0ebe0] flex justify-between items-center">
+                 <div>
+                    <span className="block text-[10px] font-bold uppercase text-[#8a997d]">Member Trust</span>
+                    <p className="text-xs font-bold text-[#3a5333]">Verified Neighbor</p>
+                 </div>
+                 <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#d9e2c6]" />)}
+                 </div>
               </div>
-
-              {!isOwner && user && (
-                <button
-                  onClick={handleContactSeller}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mb-3"
-                >
-                  💬 Send Message
-                </button>
-              )}
-
-              {!isOwner && !user && (
-                <button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mb-3"
-                >
-                  Login to Contact
-                </button>
-              )}
-
-              {/* Request Button for Customers */}
-              {!isOwner && isCustomer && item.status === 'APPROVED' && !existingRequest && (
-                <button
-                  onClick={handleBorrowRequest}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2"
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? (
-                    <span>⏳ Sending Request...</span>
-                  ) : (
-                    <>
-                      <span>📦</span>
-                      <span>Request Product</span>
-                    </>
-                  )}
-                </button>
-              )}
-
-              {!isOwner && isCustomer && existingRequest && (
-                <div className="w-full bg-blue-100 text-blue-800 py-3 px-4 rounded-lg font-semibold text-center border-2 border-blue-300">
-                  {existingRequest.status === 'PENDING' && (
-                    <>
-                      <div className="text-lg mb-1">⏳ Request Pending</div>
-                      <div className="text-sm">Waiting for owner approval</div>
-                    </>
-                  )}
-                  {existingRequest.status === 'APPROVED' && (
-                    <>
-                      <div className="text-lg mb-1">✅ Request Approved</div>
-                      <div className="text-sm">Check Borrow Requests page</div>
-                    </>
-                  )}
-                  <button
-                    onClick={() => navigate('/borrow-requests')}
-                    className="mt-2 text-sm underline hover:no-underline"
-                  >
-                    View Your Requests →
-                  </button>
-                </div>
-              )}
-
-              {!isOwner && isCustomer && item.status !== 'APPROVED' && (
-                <div className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-semibold text-center">
-                  ⏳ Item not yet approved
-                </div>
-              )}
-
-              {!isOwner && !isCustomer && !user && (
-                <button
-                  onClick={() => navigate('/login')}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition"
-                >
-                  Login to Request
-                </button>
-              )}
             </div>
 
-            {/* Owner Actions */}
-            {isOwner && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Owner Actions</h3>
-                <div className="space-y-3">
-                  <button className="w-full bg-gray-600 text-white py-2 rounded-lg font-semibold hover:bg-gray-700 transition">
-                    ✏️ Edit Item
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    disabled={actionLoading}
-                    className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50"
-                  >
-                    {actionLoading ? 'Deleting...' : '🗑️ Delete Item'}
-                  </button>
-                </div>
-              </div>
-            )}
+            <div className="text-center p-4">
+              <p className="text-[10px] font-bold text-[#8a997d] uppercase tracking-widest">
+                Added {new Date(item.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
           </div>
         </div>
       </div>

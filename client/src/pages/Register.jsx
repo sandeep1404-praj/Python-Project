@@ -52,81 +52,102 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 text-center">Create Account</h1>
-        <p className="text-gray-600 text-center mb-6">Join Library Manager</p>
+    <div className="page-container min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Decorative Orbs */}
+      <div className="absolute top-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#d9e2c6] rounded-full blur-[120px] opacity-40"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[45%] h-[45%] bg-[#3a5333] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
 
-        {error && <div className="error-message mb-4">{error}</div>}
+      <div className="card w-full max-w-lg p-10 bg-white/80 backdrop-blur-xl border border-[#f0ebe0] relative z-10">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-display font-bold text-[#2f3b2b] mb-2 tracking-tight">Join Our Circle</h1>
+          <p className="text-[#56624e] font-medium italic">"Every shared item tells a story"</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="form-group">
-            <label className="form-label">Username</label>
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
+            <p className="font-bold flex items-center gap-2">
+              <span className="text-lg">⚠️</span> {error}
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="form-group md:col-span-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Chosen Name</label>
             <input
               type="text"
               name="username"
-              className="input-base"
+              className="input-base bg-white"
               value={formData.username}
               onChange={handleChange}
-              placeholder="Choose a username"
+              placeholder="Username"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Email</label>
+          <div className="form-group md:col-span-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Email Address</label>
             <input
               type="email"
               name="email"
-              className="input-base"
+              className="input-base bg-white"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Email"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
+          <div className="form-group md:col-span-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Security Key</label>
             <input
               type="password"
               name="password"
-              className="input-base"
+              className="input-base bg-white"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create a password"
+              placeholder="••••••••"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Confirm Password</label>
+          <div className="form-group md:col-span-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Repeat Key</label>
             <input
               type="password"
               name="confirmPassword"
-              className="input-base"
+              className="input-base bg-white"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Confirm your password"
+              placeholder="••••••••"
               required
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary w-full"
-          >
-            {loading ? 'Creating account...' : 'Register'}
-          </button>
+          <div className="md:col-span-2 mt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary w-full py-4 text-sm font-bold tracking-widest uppercase transition-all duration-300 transform hover:scale-[1.01] shadow-xl hover:shadow-[#3a5333]/30"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Building profile...
+                </span>
+              ) : 'Create Your Account'}
+            </button>
+          </div>
         </form>
 
-        <p className="text-center text-gray-600 mt-4">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold">
-            Login here
-          </Link>
-        </p>
+        <div className="mt-10 pt-8 border-t border-[#fbf7ee] text-center">
+          <p className="text-[#56624e] text-sm">
+            Already a member?{' '}
+            <Link to="/login" className="text-[#3a5333] font-bold hover:underline decoration-2 underline-offset-4">
+              Step inside here
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

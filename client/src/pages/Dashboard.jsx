@@ -54,93 +54,97 @@ export default function Dashboard() {
   const statuses = [...new Set(items.map(item => item.status))];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="page-container py-12">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <motion.div 
              initial={{ opacity: 0, x: -20 }}
              animate={{ opacity: 1, x: 0 }}
+             className="max-w-2xl"
           >
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-              <FaBoxOpen className="text-blue-600" /> Items Dashboard
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-[#2f3b2b] mb-4 flex items-center gap-4">
+              <FaBoxOpen className="text-[#3a5333]" /> Central Inventory
             </h1>
-            <p className="text-gray-500 mt-1">Manage and view all available items</p>
+            <p className="text-[#56624e] text-lg leading-relaxed">Oversee and manage the collective resources of our shared library community.</p>
           </motion.div>
           
           <motion.div
              initial={{ opacity: 0, x: 20 }}
              animate={{ opacity: 1, x: 0 }}
           >
-            <Link to="/profile" className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md font-medium">
-              <FaPlus /> Add New Item (in Profile)
+            <Link to="/profile" className="btn btn-primary px-8 py-3.5 flex items-center gap-3 shadow-xl hover:shadow-[#3a5333]/30">
+              <FaPlus /> Contribute New Item
             </Link>
           </motion.div>
         </div>
 
-        {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 shadow-sm border border-red-100">{error}</div>}
+        {error && <div className="error-message mb-8">{error}</div>}
 
         {/* Filters */}
         <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-sm p-4 mb-8 flex flex-col md:flex-row gap-4 items-center border border-gray-100"
+            className="card p-8 mb-12 flex flex-col md:flex-row gap-8 items-end bg-white/60 backdrop-blur-md border border-[#f0ebe0]"
         >
-          <div className="flex items-center gap-2 text-gray-500 font-medium">
-             <FaFilter /> Filters:
+          <div className="form-group mb-0 flex-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Filter by Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="input-base"
+            >
+              <option value="">All Lifecycle Stages</option>
+              {statuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
           </div>
-          
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Statuses</option>
-            {statuses.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
 
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">All Categories</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
+          <div className="form-group mb-0 flex-1">
+            <label className="form-label text-[10px] uppercase tracking-widest text-[#8a997d]">Filter by Category</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="input-base"
+            >
+              <option value="">All Collections</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
 
           <button
             onClick={() => {
               setStatusFilter('');
               setCategoryFilter('');
             }}
-            className="flex items-center gap-2 text-gray-500 hover:text-blue-600 transition px-4 py-2"
+            className="btn btn-secondary py-3 px-6 h-[42px] flex items-center gap-2"
           >
-            <FaRedo className="text-sm" /> Clear
+            <FaRedo className="text-xs" /> Reset
           </button>
         </motion.div>
 
         {/* Items Grid */}
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+          <div className="flex flex-col justify-center items-center py-32">
+             <div className="w-12 h-12 border-4 border-[#3a5333] border-t-transparent rounded-full animate-spin mb-4"></div>
+             <p className="text-[#56624e] font-medium animate-pulse">Synchronizing inventory...</p>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaSearch className="text-gray-300 text-3xl" />
+          <div className="card py-32 text-center border-dashed border-2">
+            <div className="bg-[#fbf7ee] w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <FaSearch className="text-[#d9e2c6] text-4xl" />
             </div>
-            <p className="text-gray-600 text-lg font-medium">No items found</p>
-            <p className="text-gray-400">Try adjusting your filters</p>
+            <h3 className="text-xl font-bold text-[#2f3b2b] mb-2">No matching items</h3>
+            <p className="text-[#56624e]">We couldn't find any resources that match your current selection.</p>
           </div>
         ) : (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
           >
             {filteredItems.map((item, index) => (
               <motion.div 
@@ -149,26 +153,33 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                  <Link to={`/item/${item.id}`} className="block h-full">
-                    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1 h-full flex flex-col">
-                      <div className="h-40 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                        <FaBoxOpen className="text-5xl text-blue-300/80" />
+                  <Link to={`/item/${item.id}`} className="block h-full group">
+                    <div className="card h-full flex flex-col overflow-hidden border border-[#f0ebe0] group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1">
+                      <div className="h-48 bg-gradient-to-br from-[#fbf7ee] to-[#f3e6c5] flex items-center justify-center relative">
+                        <FaBoxOpen className="text-6xl text-[#d9e2c6]/60 group-hover:scale-110 transition-transform duration-500" />
+                        <div className="absolute top-4 left-4">
+                           <span className="text-[10px] font-black uppercase tracking-widest text-[#3a5333] bg-white/90 px-3 py-1 rounded-full shadow-sm">{item.category}</span>
+                        </div>
                       </div>
-                      <div className="p-5 flex-1 flex flex-col">
-                        <div className="flex justify-between items-start mb-2">
-                           <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{item.category}</span>
-                           <span className={`text-xs px-2 py-1 rounded font-medium ${
-                                item.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
-                                item.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-4">
+                           <span className={`status-badge ${
+                                item.status === 'APPROVED' ? 'status-badge-available' : 
+                                item.status === 'PENDING' ? 'status-badge-pending' : 'status-badge-borrowed'
                            }`}>
                             {item.status}
                            </span>
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">{item.name}</h3>
-                        <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-1">{item.description}</p>
+                        <h3 className="text-lg font-display font-bold text-[#2f3b2b] mb-2 group-hover:text-[#3a5333] transition-colors">{item.name}</h3>
+                        <p className="text-[#56624e] text-sm mb-6 line-clamp-2 flex-1 italic">"{item.description}"</p>
                         
-                        <div className="pt-3 border-t border-gray-100 text-xs text-gray-400">
-                           Owner: <span className="text-gray-600 font-medium">{item.owner_username}</span>
+                        <div className="pt-4 border-t border-[#fbf7ee] flex items-center justify-between">
+                           <div className="flex items-center gap-2">
+                             <div className="w-6 h-6 rounded-full bg-[#fbf7ee] flex items-center justify-center text-[#3a5333] text-[10px] font-bold border border-[#d9e2c6]">
+                               {item.owner_username?.charAt(0).toUpperCase() || '?'}
+                             </div>
+                             <span className="text-xs font-bold text-[#2f3b2b]">{item.owner_username}</span>
+                           </div>
                         </div>
                       </div>
                     </div>

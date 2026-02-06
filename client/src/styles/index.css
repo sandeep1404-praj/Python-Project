@@ -3,87 +3,110 @@
 
 @layer components {
   .btn {
-    @apply px-5 py-2 rounded font-medium transition-all duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed;
+    @apply px-6 py-2.5 rounded-full font-semibold transition-all duration-300 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-sm;
   }
 
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply bg-[#3a5333] text-[#f8f1da] hover:bg-[#31462b] hover:shadow-md active:scale-95;
   }
 
   .btn-secondary {
-    @apply bg-gray-500 text-white hover:bg-gray-600;
+    @apply bg-[#d9e2c6] text-[#2f3b2b] hover:bg-[#ccd9b6] hover:shadow-md active:scale-95;
   }
 
   .btn-success {
-    @apply bg-green-600 text-white hover:bg-green-700;
+    @apply bg-emerald-600 text-white hover:bg-emerald-700;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply bg-rose-600 text-white hover:bg-rose-700;
   }
 
   .btn-warning {
-    @apply bg-yellow-500 text-gray-900 hover:bg-yellow-600;
+    @apply bg-amber-500 text-gray-900 hover:bg-amber-600;
   }
 
   .btn-small {
-    @apply px-3 py-1 text-sm;
+    @apply px-4 py-1.5 text-sm;
   }
 
   .input-base {
-    @apply w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100;
+    @apply w-full px-4 py-2 bg-white/50 border border-[#d9e2c6] rounded-xl focus:outline-none focus:border-[#3a5333] focus:ring-4 focus:ring-[#3a5333]/10 transition-all;
   }
 
   .form-group {
-    @apply mb-5;
+    @apply mb-6;
   }
 
   .form-label {
-    @apply block mb-2 font-semibold text-gray-700;
+    @apply block mb-2 font-medium text-[#2f3b2b];
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-[#f0ebe0] overflow-hidden hover:shadow-md transition-shadow;
   }
 
   .error-message {
-    @apply bg-red-100 text-red-700 px-4 py-3 rounded border-l-4 border-red-400 mb-5;
+    @apply bg-rose-50 text-rose-700 px-4 py-3 rounded-xl border border-rose-200 mb-6;
   }
 
   .success-message {
-    @apply bg-green-100 text-green-700 px-4 py-3 rounded border-l-4 border-green-400 mb-5;
+    @apply bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl border border-emerald-200 mb-6;
   }
 
   .status-badge {
-    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase;
+    @apply inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider;
   }
 
   .status-badge-pending {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-amber-100 text-amber-800 border border-amber-200;
   }
 
   .status-badge-approved {
-    @apply bg-green-100 text-green-800;
+    @apply bg-emerald-100 text-emerald-800 border border-emerald-200;
   }
 
   .status-badge-available {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-[#d9e2c6] text-[#3a5333] border border-[#3a5333]/20;
   }
 
   .status-badge-reserved {
-    @apply bg-orange-100 text-orange-800;
+    @apply bg-orange-100 text-orange-800 border border-orange-200;
   }
 
   .status-badge-checked-out {
-    @apply bg-purple-100 text-purple-800;
+    @apply bg-indigo-100 text-indigo-800 border border-indigo-200;
   }
 
   .status-badge-returned {
-    @apply bg-green-100 text-green-800;
+    @apply bg-teal-100 text-teal-800 border border-teal-200;
   }
 
   .status-badge-rejected {
-    @apply bg-red-100 text-red-800;
+    @apply bg-rose-100 text-rose-800 border border-rose-200;
   }
 
   .status-badge-denied {
-    @apply bg-red-100 text-red-800;
+    @apply bg-rose-100 text-rose-800 border border-rose-200;
+  }
+
+  .page-container {
+    @apply min-h-screen bg-[#fbf7ee] text-[#2f3b2b];
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d9e2c6;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3a5333;
   }
 }
 

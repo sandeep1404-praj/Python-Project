@@ -97,114 +97,136 @@ export default function BorrowRequests() {
   const displayRequests = activeTab === 'sent' ? sentRequests : receivedRequests;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8 flex items-center gap-3"><FaClipboardList /> Borrow Requests</h1>
+    <div className="page-container py-12">
+      <div className="max-w-6xl mx-auto px-6">
+        <h1 className="text-4xl md:text-5xl font-display font-bold text-[#2f3b2b] mb-12 flex items-center gap-4">
+          <FaClipboardList className="text-[#3a5333]" /> Request Journal
+        </h1>
 
-        {error && <div className="error-message mb-4">{error}</div>}
-        {success && <div className="success-message mb-4">{success}</div>}
+        {error && <div className="error-message mb-8">{error}</div>}
+        {success && (
+          <div className="mb-8 p-4 bg-green-50 border-l-4 border-[#3a5333] text-[#2f3b2b] text-sm animate-bounce-short">
+            <span className="font-bold flex items-center gap-2">✨ {success}</span>
+          </div>
+        )}
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b-2 border-gray-200">
+        <div className="flex gap-1 mb-10 bg-[#f0ebe0]/50 p-1.5 rounded-2xl w-fit">
           <button
             onClick={() => setActiveTab('sent')}
-            className={`px-6 py-3 font-semibold border-b-2 transition flex items-center gap-2 ${
+            className={`px-8 py-3.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 text-sm ${
               activeTab === 'sent'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
+                ? 'bg-[#3a5333] text-white shadow-lg'
+                : 'text-[#56624e] hover:bg-white/50'
             }`}
           >
-            <FaPaperPlane /> Sent Requests ({sentRequests.length})
+            <FaPaperPlane className={activeTab === 'sent' ? 'text-[#d9e2c6]' : 'text-[#8a997d]'} /> 
+            Sent Outgoing <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'sent' ? 'bg-white/20' : 'bg-[#e0d9c8]'}`}>{sentRequests.length}</span>
           </button>
           <button
             onClick={() => setActiveTab('received')}
-            className={`px-6 py-3 font-semibold border-b-2 transition flex items-center gap-2 ${
+            className={`px-8 py-3.5 rounded-xl font-bold transition-all duration-300 flex items-center gap-3 text-sm ${
               activeTab === 'received'
-                ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-600 hover:text-gray-800'
+                ? 'bg-[#3a5333] text-white shadow-lg'
+                : 'text-[#56624e] hover:bg-white/50'
             }`}
           >
-            <FaInbox /> Received Requests ({receivedRequests.length})
+            <FaInbox className={activeTab === 'received' ? 'text-[#d9e2c6]' : 'text-[#8a997d]'} /> 
+            Received Incoming <span className={`ml-1 text-[10px] px-2 py-0.5 rounded-full ${activeTab === 'received' ? 'bg-white/20' : 'bg-[#e0d9c8]'}`}>{receivedRequests.length}</span>
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Loading borrow requests...</p>
+          <div className="flex flex-col justify-center items-center py-24">
+            <div className="w-12 h-12 border-4 border-[#3a5333] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-[#56624e] font-medium animate-pulse">Consulting the archives...</p>
           </div>
         ) : displayRequests.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-5xl mb-4 flex justify-center text-gray-400">
+          <div className="card py-24 text-center border-dashed border-2 bg-white/40">
+            <div className="text-6xl mb-6 flex justify-center text-[#d9e2c6]">
               {activeTab === 'sent' ? <FaPaperPlane /> : <FaInbox />}
             </div>
-            <p className="text-gray-600 text-lg">
+            <h3 className="text-xl font-bold text-[#2f3b2b] mb-2">No active requests</h3>
+            <p className="text-[#56624e] italic">
               {activeTab === 'sent' 
-                ? 'You haven\'t sent any borrow requests yet' 
-                : 'You haven\'t received any borrow requests yet'}
+                ? 'Your request journal is currently empty' 
+                : 'No one has requested your items yet'}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-6">
             {displayRequests.map(request => (
-              <div key={request.id} className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                <div className="flex justify-between items-start mb-4">
+              <div key={request.id} className="card p-8 bg-white/80 hover:bg-white transition-all duration-300 border border-[#f0ebe0] group">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-6">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                      {request.item_name}
-                    </h3>
-                    <p className="text-gray-600">
+                    <div className="flex items-center gap-3 mb-2">
+                       <h3 className="text-2xl font-display font-bold text-[#2f3b2b] group-hover:text-[#3a5333] transition-colors">
+                        {request.item_name}
+                       </h3>
+                       <span className={`status-badge ${
+                         request.status === 'APPROVED' ? 'status-badge-available' : 
+                         request.status === 'PENDING' ? 'status-badge-pending' : 'status-badge-borrowed'
+                       }`}>
+                         {request.status}
+                       </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-[#56624e] mt-2">
                       {activeTab === 'sent' ? (
-                        <span className="flex items-center gap-2"><FaPaperPlane /> You requested this item</span>
+                        <div className="flex items-center gap-2 bg-[#fbf7ee] px-4 py-1.5 rounded-full border border-[#f0ebe0]">
+                           <FaPaperPlane className="text-[#8a997d] text-xs" />
+                           <span>You initiated this transfer</span>
+                        </div>
                       ) : (
-                        <span className="flex items-center gap-2"><FaInbox /> Requested by: <strong>{request.borrower_username}</strong></span>
+                        <div className="flex items-center gap-2 bg-[#fbf7ee] px-4 py-1.5 rounded-full border border-[#f0ebe0]">
+                           <FaInbox className="text-[#8a997d] text-xs" />
+                           <span>Requested by <strong className="text-[#2f3b2b] ml-1">{request.borrower_username}</strong></span>
+                        </div>
                       )}
-                    </p>
+                    </div>
                   </div>
-                  <span className={`status-badge status-badge-${request.status.toLowerCase()}`}>
-                    {request.status}
-                  </span>
+                  
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 bg-[#fbf7ee]/50 p-6 rounded-2xl border border-[#f0ebe0] w-full lg:w-auto">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[#8a997d] mb-1">Initiated</p>
+                      <p className="text-sm font-bold text-[#2f3b2b]">{request.request_date ? new Date(request.request_date).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    {request.due_date && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#8a997d] mb-1">Due Date</p>
+                        <p className="text-sm font-bold text-[#3a5333]">{new Date(request.due_date).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[#8a997d] mb-1">Status</p>
+                      <p className="text-sm font-bold text-[#2f3b2b]">{request.item_status}</p>
+                    </div>
+                    {request.return_date && (
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#8a997d] mb-1">Returned</p>
+                        <p className="text-sm font-bold text-green-700">{new Date(request.return_date).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm text-gray-600">
-                  <div>
-                    <strong>Request Date:</strong>
-                    <p>{request.request_date ? new Date(request.request_date).toLocaleDateString() : 'N/A'}</p>
-                  </div>
-                  {request.due_date && (
-                    <div>
-                      <strong>Due Date:</strong>
-                      <p>{new Date(request.due_date).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                  <div>
-                    <strong>Item Status:</strong>
-                    <p>{request.item_status}</p>
-                  </div>
-                  {request.return_date && (
-                    <div>
-                      <strong>Returned:</strong>
-                      <p>{new Date(request.return_date).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 flex-wrap">
+                <div className="mt-8 pt-8 border-t border-[#fbf7ee] flex gap-4">
                   {/* Actions for received requests (you are the owner) */}
                   {activeTab === 'received' && request.status === 'PENDING' && (
                     <>
                       <button
                         onClick={() => handleApprove(request.id)}
                         disabled={actionLoading === request.id}
-                        className="btn btn-success btn-small flex items-center gap-1"
+                        className="btn btn-primary px-8 flex items-center gap-2"
                       >
-                        {actionLoading === request.id ? 'Processing...' : <><FaCheck /> Approve</>}
+                        {actionLoading === request.id ? 'Updating Journal...' : <><FaCheck className="text-[10px]" /> Grant Permission</>}
                       </button>
                       <button
                         onClick={() => handleDeny(request.id)}
                         disabled={actionLoading === request.id}
-                        className="btn btn-danger btn-small flex items-center gap-1"
+                        className="btn btn-secondary px-8 flex items-center gap-2 border-red-100 hover:border-red-200"
                       >
-                        {actionLoading === request.id ? 'Processing...' : <><FaTimes /> Deny</>}
+                        {actionLoading === request.id ? 'Updating Journal...' : <><FaTimes className="text-[10px]" /> Decline</>}
                       </button>
                     </>
                   )}
@@ -214,21 +236,28 @@ export default function BorrowRequests() {
                     <button
                       onClick={() => handleReturn(request.id)}
                       disabled={actionLoading === request.id}
-                      className="btn btn-warning btn-small flex items-center gap-1"
+                      className="btn btn-primary px-10 flex items-center gap-3 bg-[#56624e] shadow-lg"
                     >
-                      {actionLoading === request.id ? 'Processing...' : <><FaUndo /> Return Item</>}
+                      {actionLoading === request.id ? 'Processing Return...' : <><FaUndo className="text-xs" /> Mark as Returned</>}
                     </button>
                   )}
 
-                  {/* Status messages */}
+                  {/* Status messages with improved semantics */}
                   {request.status === 'PENDING' && activeTab === 'sent' && (
-                    <p className="text-sm text-gray-500 italic">Waiting for owner approval...</p>
+                    <div className="flex items-center gap-2 text-[#8a997d] italic text-sm">
+                      <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
+                      Awaiting owner's blessing...
+                    </div>
                   )}
                   {request.status === 'DENIED' && (
-                    <p className="text-sm text-red-600 italic">This request was denied</p>
+                    <p className="flex items-center gap-2 text-red-600 italic text-sm">
+                      <FaTimes className="text-xs" /> This request was not accepted.
+                    </p>
                   )}
                   {request.status === 'RETURNED' && (
-                    <p className="text-sm text-green-600 italic">Item has been returned</p>
+                    <p className="flex items-center gap-2 text-[#3a5333] italic text-sm font-medium">
+                      <FaCheck className="text-xs" /> Item has been safely returned to the library.
+                    </p>
                   )}
                 </div>
               </div>

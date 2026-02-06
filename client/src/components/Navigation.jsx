@@ -42,10 +42,12 @@ export default function Navigation() {
     { to: '/', label: 'Home', icon: FaHome, public: true },
     { to: '/about', label: 'About', icon: FaInfoCircle, public: true },
     { to: '/products', label: 'Products', icon: FaShoppingBag, public: true },
+    { to: '/messages', label: 'New Message', icon: FaEnvelope, public: false, hidden: true },
   ];
 
   // Filter links based on auth state
   const visibleLinks = navLinks.filter(link => {
+    if (link.hidden) return false;
     if (link.public) return true;
     if (link.protected && token) return true;
     return false;
@@ -55,14 +57,17 @@ export default function Navigation() {
   const cn = (...inputs) => twMerge(clsx(inputs));
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100">
+    <nav className="sticky top-0 z-50 bg-[#fbf7ee]/90 backdrop-blur-md border-b border-[#ede2c1]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Library Manager
+          <Link to="/" className="flex items-center gap-3 group">
+            <span className="inline-flex items-center justify-center h-9 w-9 rounded-xl bg-[#3a5333] text-[#f8f1da]">
+              <FaBookOpen />
+            </span>
+            <span className="font-display text-xl text-[#2f3b2b]">
+              Library of Things
             </span>
           </Link>
 
@@ -73,13 +78,12 @@ export default function Navigation() {
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center gap-2",
+                  "px-3 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2",
                   location.pathname === link.to
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                    ? "bg-[#e9dfbf] text-[#2f3b2b]"
+                    : "text-[#4f5e45] hover:bg-[#f1e7c7]"
                 )}
               >
-                <link.icon className="w-4 h-4" />
                 {link.label}
               </Link>
             ))}
@@ -94,19 +98,19 @@ export default function Navigation() {
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-200",
                     location.pathname === '/profile' 
-                      ? "bg-blue-50 text-blue-600 ring-2 ring-blue-100" 
-                      : "hover:bg-gray-50 text-gray-700"
+                      ? "bg-[#e9dfbf] text-[#2f3b2b] ring-2 ring-[#efe5c8]" 
+                      : "hover:bg-[#f1e7c7] text-[#3b4a33]"
                   )}
                   title="Profile"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-sm shadow-md">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#6b7b57] to-[#3a5333] rounded-full flex items-center justify-center text-white text-sm shadow-md">
                     {user?.role === 'STAFF' ? <FaKey /> : <FaUser />}
                   </div>
                   <span className="font-medium max-w-[100px] truncate">{user?.username}</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                  className="p-2 text-[#7a8b65] hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                   title="Logout"
                 >
                   <FaSignOutAlt className="w-5 h-5" />
@@ -116,15 +120,15 @@ export default function Navigation() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-[#4f5e45] hover:text-[#2f3b2b] transition-colors"
                 >
-                  Log In
+                  Sign In
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                  className="px-5 py-2 text-sm font-semibold text-[#f8f1da] bg-[#3a5333] hover:bg-[#31462b] rounded-full shadow-md hover:shadow-lg transition-all"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </div>
             )}
@@ -134,7 +138,7 @@ export default function Navigation() {
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-600 hover:text-blue-600 p-2 focus:outline-none"
+              className="text-[#4f5e45] hover:text-[#2f3b2b] p-2 focus:outline-none"
             >
               <span className="sr-only">Open menu</span>
               {isOpen ? <FaTimes className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
@@ -150,7 +154,7 @@ export default function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
+            className="md:hidden bg-[#fbf7ee] border-b border-[#ede2c1] overflow-hidden"
           >
             <div className="px-4 pt-2 pb-4 space-y-1">
               {visibleLinks.map((link) => (
@@ -160,8 +164,8 @@ export default function Navigation() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium transition-colors",
                     location.pathname === link.to
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                      ? "bg-[#e9dfbf] text-[#2f3b2b]"
+                      : "text-[#4f5e45] hover:bg-[#f1e7c7]"
                   )}
                 >
                   <link.icon className="w-5 h-5" />
@@ -170,21 +174,21 @@ export default function Navigation() {
               ))}
 
               {/* Mobile Auth Section */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-[#ede2c1]">
                 {token ? (
                     <>
                     <Link
                         to="/profile"
-                        className="flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                    className="flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-[#4f5e45] hover:bg-[#f1e7c7]"
                     >
-                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                    <div className="w-6 h-6 bg-gradient-to-br from-[#6b7b57] to-[#3a5333] rounded-full flex items-center justify-center text-white text-xs">
                          {user?.role === 'STAFF' ? <FaKey /> : <FaUser />}
                         </div>
                         <span>Profile ({user?.username})</span>
                     </Link>
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
                     >
                         <FaSignOutAlt className="w-5 h-5" />
                         <span>Logout</span>
@@ -194,13 +198,13 @@ export default function Navigation() {
                     <div className="grid grid-cols-2 gap-3 px-3">
                         <Link
                             to="/login"
-                            className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+                      className="flex items-center justify-center gap-2 px-4 py-2 border border-[#c9b98d] rounded-full text-[#4f5e45] font-medium hover:bg-[#f1e7c7]"
                         >
                             <FaSignInAlt /> Log In
                         </Link>
                         <Link
                             to="/register"
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                      className="flex items-center justify-center gap-2 px-4 py-2 bg-[#3a5333] text-[#f8f1da] rounded-full font-medium hover:bg-[#31462b]"
                         >
                             <FaUserPlus /> Sign Up
                         </Link>

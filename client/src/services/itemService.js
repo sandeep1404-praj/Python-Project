@@ -21,7 +21,10 @@ export const itemService = {
 
   createItem: async (itemData) => {
     try {
-      const response = await api.post('/items/', itemData);
+      const config = itemData instanceof FormData
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const response = await api.post('/items/', itemData, config);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -30,7 +33,10 @@ export const itemService = {
 
   updateItem: async (id, itemData) => {
     try {
-      const response = await api.put(`/items/${id}/`, itemData);
+      const config = itemData instanceof FormData
+        ? { headers: { 'Content-Type': 'multipart/form-data' } }
+        : undefined;
+      const response = await api.put(`/items/${id}/`, itemData, config);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
