@@ -50,6 +50,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100)
     description = models.TextField()
+    image = models.ImageField(upload_to='item_images/', blank=True, null=True)
     ownership_type = models.CharField(max_length=10, choices=OWNERSHIP_CHOICES)
     condition_score = models.IntegerField(null=True, blank=True)  # 1-5, set after inspection
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING_VERIFICATION')

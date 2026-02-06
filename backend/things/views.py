@@ -338,14 +338,11 @@ class UserView(APIView):
     def put(self, request):
         """Update user profile including location"""
         user = request.user
-        location = request.data.get('location')
-        
-        if location is not None:
-            user.location = location
-            user.save()
-
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RatingViewSet(viewsets.ModelViewSet):
     """ViewSet for managing product ratings by staff"""

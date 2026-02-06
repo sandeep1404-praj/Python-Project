@@ -14,7 +14,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['id', 'owner', 'owner_id', 'owner_username', 'owner_email', 'name', 'category', 'description', 'ownership_type', 'condition_score', 'status', 'created_at']
+        fields = ['id', 'owner', 'owner_id', 'owner_username', 'owner_email', 'name', 'category', 'description', 'image', 'ownership_type', 'condition_score', 'status', 'created_at']
 
 class InspectionReportSerializer(serializers.ModelSerializer):
     item = ItemSerializer(read_only=True)
